@@ -1,70 +1,46 @@
+# Full R Code for Regression Analysis of Electricity Prices and RES Investments
+# This script performs a linear regression analysis to examine the relationship 
+# between electricity prices and investments in renewable energy sources (RES).
+
+# Load necessary libraries (uncomment if not installed)
 # install.packages("dplyr")
+# install.packages("broom")
 # install.packages("readr")
-# install.packages("ggplot2")
-# install.packages("broom")    # For tidy regression output
 
-library(dplyr)     # For data manipulation
-library(readr)     # For reading data files
-library(ggplot2)   # For data visualization (optional)
-library(broom)     # For tidying regression results
+# Import required libraries
+library(dplyr)       # For data manipulation
+library(broom)       # For tidy output of regression results
+library(readr)       # For reading data from CSV
 
-# Load the electricity prices data, change to respective path
-electricity_prices <- read_csv("path_to_electricity_prices.csv") 
+# 1. Load Data from CSV File
+# The CSV should contain two columns: 'Electricity_Price' and 'Investment_in_RES'.
+# Make sure to replace 'path_to_your_file.csv' with the actual file path to your data.
 
-# Load the RES investment data, change to respective path
-res_investments <- read_csv("path_to_res_investments.csv", skip = 4)  # Adjusting to handle extra header rows if necessary
+data <- read_csv("path_to_your_file.csv")
 
-# Convert Date column in electricity prices to year and aggregate by year
-electricity_prices <- electricity_prices %>%
-  mutate(Year = lubridate::year(Date)) %>%
-  group_by(`ISO3 Code`, Year) %>%
-  summarize(Average_Price = mean(`Price (EUR/MWhe)`, na.rm = TRUE))
+# 2. Perform Linear Regression
+# We will run a linear regression with electricity price as the independent variable (predictor)
+# and investments in RES as the dependent variable (outcome).
 
-# Reshape the RES investment data for merging
-res_investments_long <- res_investments %>%
-  select(`Country Code`, `2015`, `2016`, `2017`, `2018`, `2019`, `2020`) %>%
-  pivot_longer(cols = starts_with("20"), names_to = "Year", values_to = "Investment") %>%
-  mutate(Year = as.numeric(Year))
+model <- lm(Investment_in_RES ~ Electricity_Price, data = data)
 
-# Merge the datasets by Country Code and Year
-merged_data <- left_join(electricity_prices, res_investments_long, by = c("ISO3 Code" = "Country Code", "Year" = "Year"))
+# 3. Summary of the Regression Model
+# This provides an overview of the regression, including R-squared, coefficients, 
+# p-values, and other statistical metrics.
 
-# Filter out rows with missing data
-merged_data <- merged_data %>% filter(!is.na(Average_Price) & !is.na(Investment))
+summary(model)
 
-# Function to perform regression and correlation for each country
-analyze_country <- function(country_code) {
-  country_data <- merged_data %>% filter(`ISO3 Code` == country_code)
-  if (nrow(country_data) < 2) return(NULL)
-  
-  # Perform linear regression
-  model <- lm(Investment ~ Average_Price, data = country_data)
-  summary <- summary(model)
-  tidy_model <- tidy(model)
-  
-  # Perform correlation test
-  correlation <- cor.test(country_data$Average_Price, country_data$Investment)
-  
-  # Compile results
-  results <- data.frame(
-    Country = country_code,
-    R_Squared = summary$r.squared,
-    P_Value_Regression = tidy_model$p.value[2],
-    Correlation = correlation$estimate,
-    P_Value_Correlation = correlation$p.value
-  )
-  return(results)
-}
+# 4. Extract Key Results
+# We'll extract and print important results such as R-squared, Adjusted R-squared, 
+# the regression coefficients, and p-values.
 
-# Apply analysis to all countries
-results <- lapply(unique(merged_data$`ISO3 Code`), analyze_country)
-results_df <- bind_rows(results)
+r_squared <- summary(model)$r.squared
+adj_r_squared <- summary(model)$adj.r.squared
+coefficients <- summary(model)$coefficients
 
-# Filter significant results where p-value < 0.05 for both regression and correlation
-significant_results <- results_df %>% filter(P_Value_Regression < 0.05 & P_Value_Correlation < 0.05)
-
-# Output significant results
-write.csv(significant_results, "significant_countries_analysis.csv", row.names = FALSE)
-
-# Display significant results
-print(significant_results)
+# Print Key Results
+cat("R-Squared:", r_squared, "\n")
+cat("Adjusted R-Squared:", adj_r_squared, "\n")
+cat("Intercept (baseline investment):", coefficients[1, 1], "\n")
+cat("Coefficient for Electricity Price:", coefficients[2, 1], "\n")
+cat("P-Value for Electricity Price:", coefficients[2, 4], "\n")
