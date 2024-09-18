@@ -1,7 +1,3 @@
-# Full R Code for Regression Analysis of Electricity Prices and RES Investments
-# This script performs a linear regression analysis to examine the relationship 
-# between electricity prices and investments in renewable energy sources (RES).
-
 # Load necessary libraries (uncomment if not installed)
 # install.packages("dplyr")
 # install.packages("broom")
@@ -13,13 +9,13 @@ library(broom)       # For tidy output of regression results
 library(readr)       # For reading data from CSV
 
 # 1. Load Data from CSV File
-# The CSV should contain two columns: 'Electricity_Price' and 'Investment_in_RES'.
+# The CSV should contain two columns: 'Electricity_Prices' and 'Investment_in_Renewable_Energy_Sources'.
 # Make sure to replace 'path_to_your_file.csv' with the actual file path to your data.
 
 data <- read_csv("path_to_your_file.csv")
 
 # 2. Perform Linear Regression
-# We will run a linear regression with electricity price as the independent variable (predictor)
+# Run a linear regression with electricity price as the independent variable (predictor)
 # and investments in RES as the dependent variable (outcome).
 
 model <- lm(Investment_in_RES ~ Electricity_Price, data = data)
@@ -31,7 +27,7 @@ model <- lm(Investment_in_RES ~ Electricity_Price, data = data)
 summary(model)
 
 # 4. Extract Key Results
-# We'll extract and print important results such as R-squared, Adjusted R-squared, 
+# Extract and print important results such as R-squared, Adjusted R-squared, 
 # the regression coefficients, and p-values.
 
 r_squared <- summary(model)$r.squared
