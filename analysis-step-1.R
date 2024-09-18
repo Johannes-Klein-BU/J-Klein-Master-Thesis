@@ -8,10 +8,10 @@ library(readr)     # For reading data files
 library(ggplot2)   # For data visualization (optional)
 library(broom)     # For tidying regression results
 
-# Load the electricity prices data
-electricity_prices <- read_csv("path_to_electricity_prices.csv")
+# Load the electricity prices data, change to respective path
+electricity_prices <- read_csv("path_to_electricity_prices.csv") 
 
-# Load the RES investment data
+# Load the RES investment data, change to respective path
 res_investments <- read_csv("path_to_res_investments.csv", skip = 4)  # Adjusting to handle extra header rows if necessary
 
 # Convert Date column in electricity prices to year and aggregate by year
